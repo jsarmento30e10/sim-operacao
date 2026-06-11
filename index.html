@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2D3277">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sim. Operação">
+<meta name="application-name" content="Sim. Operação">
+<meta name="description" content="Simulador de operação Meli Full: Inbound, Putaway, Picking e Packing com scanner de QR.">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%232D3277'/%3E%3Crect x='126' y='150' width='260' height='230' rx='22' fill='%23FFE600'/%3E%3Crect x='126' y='150' width='260' height='40' fill='%23ffd400'/%3E%3Crect x='226' y='150' width='60' height='48' rx='8' fill='%232D3277'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%232D3277'/%3E%3Crect x='126' y='150' width='260' height='230' rx='22' fill='%23FFE600'/%3E%3Crect x='126' y='150' width='260' height='40' fill='%23ffd400'/%3E%3Crect x='226' y='150' width='60' height='48' rx='8' fill='%232D3277'/%3E%3C/svg%3E">
+<link rel="manifest" id="manifest-link">
+
+<title>Simulador de Operação · Meli Full</title>
+<style>
+  :root{
+    --amarelo:#FFE600; --azul:#3483FA; --azul-esc:#2D3277;
+    --verde:#00A650; --vermelho:#E63946; --laranja:#FF7733;
+    --cinza-bg:#EBEBEB; --cinza-card:#FFFFFF; --cinza-borda:#E0E0E0;
+    --texto:#333333; --texto-fraco:#767676;
+    --sombra:0 1px 3px rgba(0,0,0,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--cinza-bg); color:var(--texto);
+    padding-bottom:72px; /* espaço pra nav */
+    -webkit-font-smoothing:antialiased;
+  }
+  header.topo{
+    background:var(--azul-esc); color:#fff; padding:14px 16px;
+    display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:20;
+  }
+  header.topo .logo{
+    width:34px;height:34px;border-radius:8px;background:var(--amarelo);
+    display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;
+  }
+  header.topo h1{font-size:15px;margin:0;line-height:1.1;font-weight:700;}
+  header.topo small{display:block;font-weight:400;opacity:.8;font-size:11px;margin-top:2px;}
+  main{padding:14px;max-width:760px;margin:0 auto;}
+  .tela{display:none;} .tela.ativa{display:block;}
+
+  h2.secao{font-size:17px;margin:4px 0 12px;display:flex;align-items:center;gap:8px;}
+  h2.secao .num{background:var(--amarelo);color:#000;font-size:13px;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 auto;}
+  p.dica{font-size:13px;color:var(--texto-fraco);margin:0 0 14px;line-height:1.4;}
+
+  .card{background:var(--cinza-card);border-radius:12px;padding:14px;box-shadow:var(--sombra);margin-bottom:12px;}
+  .card h3{margin:0 0 10px;font-size:14px;}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:10px;padding:14px 16px;font-size:15px;font-weight:700;
+    cursor:pointer;width:100%;font-family:inherit;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn.azul{background:var(--azul);color:#fff;}
+  .btn.amarelo{background:var(--amarelo);color:#000;}
+  .btn.verde{background:var(--verde);color:#fff;}
+  .btn.cinza{background:#fff;color:var(--texto);border:1.5px solid var(--cinza-borda);}
+  .btn.vermelho{background:#fff;color:var(--vermelho);border:1.5px solid var(--vermelho);}
+  .btn.peq{padding:9px 12px;font-size:13px;width:auto;}
+  .btn-row{display:flex;gap:8px;} .btn-row .btn{flex:1;}
+
+  input,select{
+    width:100%;padding:12px;border:1.5px solid var(--cinza-borda);border-radius:10px;
+    font-size:15px;font-family:inherit;margin-bottom:8px;background:#fff;color:var(--texto);
+  }
+  label.campo{font-size:12px;font-weight:700;color:var(--texto-fraco);display:block;margin-bottom:4px;}
+
+  .item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--cinza-borda);}
+  .item:last-child{border-bottom:none;}
+  .item .ic{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto;}
+  .item .txt{flex:1;min-width:0;}
+  .item .txt b{font-size:14px;display:block;}
+  .item .txt span{font-size:12px;color:var(--texto-fraco);}
+  .item .del{background:none;border:none;color:var(--vermelho);font-size:20px;cursor:pointer;padding:4px 8px;}
+  .tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+  .tag.aberto{background:#EAF1FF;color:var(--azul);}
+  .tag.picking{background:#FFF3E0;color:var(--laranja);}
+  .tag.coletado{background:#E6F7EF;color:var(--verde);}
+  .tag.empacotado{background:#EDEDED;color:var(--texto-fraco);}
+
+  .vazio{text-align:center;color:var(--texto-fraco);font-size:13px;padding:24px 8px;}
+  .vazio .em{font-size:34px;display:block;margin-bottom:6px;}
+
+  /* sub-abas */
+  .subtabs{display:flex;gap:8px;margin-bottom:12px;}
+  .subtabs button{flex:1;padding:9px;border:1.5px solid var(--cinza-borda);background:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;color:var(--texto-fraco);}
+  .subtabs button.on{background:var(--azul-esc);color:#fff;border-color:var(--azul-esc);}
+
+  /* nav inferior */
+  nav.tabbar{
+    position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;
+    border-top:1px solid var(--cinza-borda);z-index:30;padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav.tabbar button{
+    flex:1;background:none;border:none;padding:8px 2px 6px;font-size:10px;color:var(--texto-fraco);
+    display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-family:inherit;
+  }
+  nav.tabbar button .em{font-size:20px;}
+  nav.tabbar button.on{color:var(--azul);font-weight:700;}
+
+  /* scanner modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;display:none;flex-direction:column;}
+  .modal.on{display:flex;}
+  .modal .mtopo{padding:14px;color:#fff;display:flex;align-items:center;justify-content:space-between;}
+  .modal .mtopo b{font-size:15px;}
+  .modal .fechar{background:none;border:none;color:#fff;font-size:26px;cursor:pointer;line-height:1;}
+  #reader{width:100%;max-width:480px;margin:0 auto;}
+  #reader video{border-radius:0;}
+  .modal .manual{padding:16px;max-width:480px;margin:0 auto;width:100%;}
+  .modal .manual input{margin-bottom:8px;}
+  .alvo-msg{color:var(--amarelo);text-align:center;font-size:13px;padding:6px 16px;}
+
+  /* toast */
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:200;
+    padding:12px 18px;border-radius:24px;color:#fff;font-weight:700;font-size:14px;
+    box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transition:opacity .2s, transform .2s;pointer-events:none;max-width:90%;text-align:center;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.ok{background:var(--verde);} #toast.err{background:var(--vermelho);} #toast.info{background:var(--azul-esc);}
+
+  .barra-prog{height:8px;background:var(--cinza-borda);border-radius:4px;overflow:hidden;margin:8px 0;}
+  .barra-prog i{display:block;height:100%;background:var(--verde);transition:width .3s;}
+
+  .linha-pick{border:1.5px solid var(--cinza-borda);border-radius:10px;padding:12px;margin-bottom:10px;}
+  .linha-pick.feito{border-color:var(--verde);background:#F4FBF7;}
+  .linha-pick .bin-dest{font-size:13px;background:var(--amarelo);color:#000;display:inline-block;padding:3px 10px;border-radius:6px;font-weight:700;margin-top:6px;}
+
+  table.estoque{width:100%;border-collapse:collapse;font-size:13px;}
+  table.estoque th,table.estoque td{padding:8px;border-bottom:1px solid var(--cinza-borda);text-align:left;}
+  table.estoque th{background:var(--azul-esc);color:#fff;font-size:12px;}
+  table.estoque td.qtd{text-align:center;font-weight:700;}
+
+  /* impressão */
+  .print-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .etq{border:1.5px dashed #999;border-radius:8px;padding:10px;text-align:center;background:#fff;break-inside:avoid;}
+  .etq .qr{display:flex;justify-content:center;margin-bottom:6px;}
+  .etq b{font-size:14px;display:block;}
+  .etq span{font-size:11px;color:#555;display:block;word-break:break-word;}
+  .print-only{display:none;}
+
+  @media print{
+    header.topo,nav.tabbar,.no-print,#toast{display:none !important;}
+    body{background:#fff;padding:0;}
+    main{padding:0;max-width:none;}
+    .tela{display:none !important;}
+    .tela.ativa{display:block !important;}
+    .print-grid{grid-template-columns:repeat(3,1fr);}
+    .etq{border:1px solid #000;}
+    .print-only{display:block;}
+  }
+  @media (min-width:520px){ .print-grid{grid-template-columns:repeat(3,1fr);} }
+</style>
+</head>
+<body>
+
+<button id="btn-instalar" onclick="instalarApp()" style="display:none;position:fixed;right:14px;bottom:84px;z-index:90;background:#FFE600;color:#000;border:none;border-radius:24px;padding:12px 18px;font-weight:700;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;font-family:inherit;">⬇ Instalar app</button>
+
+<header class="topo">
+  <div class="logo">📦</div>
+  <div>
+    <h1>Simulador de Operação</h1>
+    <small>Treino Meli Full · Inbound → Putaway → Outbound</small>
+  </div>
+</header>
+
+<main>
+  <!-- ============ CONFIGURAR ============ -->
+  <section class="tela ativa" id="tela-config">
+    <h2 class="secao"><span class="num">⚙</span> Configurar</h2>
+    <p class="dica">Cadastre os <b>Bins</b> (locais de armazenagem) e os <b>Produtos</b>. Depois vá em <b>Imprimir</b> pra gerar os QR codes pra colar nos bins e nos objetos da simulação.</p>
+
+    <div class="card">
+      <h3>📥 Carregar exemplo</h3>
+      <p class="dica" style="margin-bottom:10px">Cria 12 bins e 8 produtos prontos pra um treino rápido.</p>
+      <button class="btn amarelo" onclick="carregarExemplo()">Carregar dados de exemplo</button>
+    </div>
+
+    <div class="card">
+      <h3>🗄️ Bins de armazenagem (<span id="qtd-bins">0</span>)</h3>
+      <label class="campo">Nome do bin (ex.: A-01, B-03-2)</label>
+      <input id="in-bin" placeholder="A-01" autocapitalize="characters">
+      <button class="btn azul" onclick="addBin()">+ Adicionar bin</button>
+      <div id="lista-bins" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h3>🏷️ Produtos (<span id="qtd-prod">0</span>)</h3>
+      <label class="campo">SKU</label>
+      <input id="in-sku" placeholder="SKU-001" autocapitalize="characters">
+      <label class="campo">Descrição</label>
+      <input id="in-nome" placeholder="Camiseta Azul M">
+      <button class="btn azul" onclick="addProduto()">+ Adicionar produto</button>
+      <div id="lista-prod" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h3>💾 Dados</h3>
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn cinza peq" style="flex:1" onclick="exportar()">⬇ Exportar</button>
+        <button class="btn cinza peq" style="flex:1" onclick="document.getElementById('imp').click()">⬆ Importar</button>
+        <input type="file" id="imp" accept="application/json" style="display:none" onchange="importar(event)">
+      </div>
+      <button class="btn vermelho" onclick="resetTudo()">🗑️ Zerar toda a simulação</button>
+    </div>
+  </section>
+
+  <!-- ============ IMPRIMIR ============ -->
+  <section class="tela" id="tela-print">
+    <h2 class="secao"><span class="num">🖨</span> Imprimir QR</h2>
+    <p class="dica">Gere as etiquetas, imprima e cole: <b>QR de bin</b> na prateleira/caixa de armazenagem; <b>etiqueta de produto</b> nos objetos que vão simular os produtos. As totes (caixas amarelas) podem usar o próprio código de barras — ou imprima QRs de tote aqui.</p>
+
+    <div class="subtabs no-print">
+      <button class="on" data-sub="bins" onclick="setSubPrint('bins')">Bins</button>
+      <button data-sub="prod" onclick="setSubPrint('prod')">Produtos</button>
+      <button data-sub="tote" onclick="setSubPrint('tote')">Totes</button>
+    </div>
+
+    <div class="card no-print" id="config-tote" style="display:none">
+      <label class="campo">Quantas totes gerar?</label>
+      <input id="qtd-totes" type="number" value="6" min="1" max="40">
+    </div>
+
+    <button class="btn azul no-print" onclick="window.print()" style="margin-bottom:12px">🖨 Imprimir esta folha</button>
+    <div class="print-only" style="text-align:center;margin-bottom:12px;font-weight:700" id="print-titulo"></div>
+    <div class="print-grid" id="grade-print"></div>
+  </section>
+
+  <!-- ============ INBOUND ============ -->
+  <section class="tela" id="tela-inbound">
+    <h2 class="secao"><span class="num">1</span> Inbound · Recebimento</h2>
+    <p class="dica">A mercadoria chega <b>dentro de totes</b>. Bipe a tote e cadastre os produtos que vieram dentro dela. As totes recebidas ficam na <b>doca</b> aguardando o putaway.</p>
+    <div id="inbound-conteudo"></div>
+    <div class="card" style="margin-top:14px">
+      <h3>📦 Totes na doca (<span id="qtd-doca">0</span>)</h3>
+      <div id="lista-doca"></div>
+    </div>
+  </section>
+
+  <!-- ============ ARMAZENAR ============ -->
+  <section class="tela" id="tela-arm">
+    <h2 class="secao"><span class="num">2</span> Putaway</h2>
+    <p class="dica">A mercadoria chega <b>dentro de totes</b>. Ao começar, o sistema organiza o putaway <b>por tote</b> e direciona cada produto a um bin. Bipe a <b>tote</b> para abrir e, em cada item, bipe <b>PRODUTO → BIN</b>.</p>
+    <div id="putaway-conteudo"></div>
+    <div class="card" style="margin-top:14px">
+      <h3>📍 Resumo do estoque</h3>
+      <div id="resumo-estoque-arm"></div>
+    </div>
+  </section>
+
+  <!-- ============ PICKING ============ -->
+  <section class="tela" id="tela-pick">
+    <h2 class="secao"><span class="num">3</span> Outbound · Picking</h2>
+    <p class="dica">Gere uma lista de tarefas (pedido). Na coleta, o sistema indica o bin, você bipa o <b>produto</b> e a <b>tote</b> onde está depositando.</p>
+    <div class="btn-row" style="margin-bottom:12px">
+      <button class="btn amarelo" onclick="pedidoAleatorio()">🎲 Pedido aleatório</button>
+      <button class="btn cinza" onclick="abrirPedidoManual()">✏️ Manual</button>
+    </div>
+    <div id="form-manual" class="card" style="display:none"></div>
+    <div id="lista-pedidos"></div>
+  </section>
+
+  <!-- Execução de picking (tela cheia dentro da aba) -->
+  <section class="tela" id="tela-exec">
+    <h2 class="secao"><span class="num">3</span> Outbound · Coletando pedido</h2>
+    <div id="exec-conteudo"></div>
+    <button class="btn cinza" onclick="voltarPicking()" style="margin-top:8px">← Voltar aos pedidos</button>
+  </section>
+
+  <!-- ============ PACKING ============ -->
+  <section class="tela" id="tela-pack">
+    <h2 class="secao"><span class="num">4</span> Outbound · Packing</h2>
+    <p class="dica">Bipe a <b>tote</b> que chegou da coleta pra conferir o conteúdo e finalizar o empacotamento.</p>
+    <button class="btn azul" onclick="iniciarPacking()">📷 Bipar tote</button>
+    <div class="card" style="margin-top:14px">
+      <h3>✅ Totes empacotadas (<span id="qtd-pack">0</span>)</h3>
+      <div id="lista-pack"></div>
+    </div>
+  </section>
+
+  <!-- ============ ESTOQUE ============ -->
+  <section class="tela" id="tela-estoque">
+    <h2 class="secao"><span class="num">📊</span> Estoque</h2>
+    <div id="tabela-estoque"></div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="on" data-tela="config" onclick="irPara('config')"><span class="em">⚙️</span>Config</button>
+  <button data-tela="print" onclick="irPara('print')"><span class="em">🖨️</span>Imprimir</button>
+  <button data-tela="inbound" onclick="irPara('inbound')"><span class="em">📥</span>Inbound</button>
+  <button data-tela="arm" onclick="irPara('arm')"><span class="em">🗄️</span>Putaway</button>
+  <button data-tela="pick" onclick="irPara('pick')"><span class="em">📋</span>Picking</button>
+  <button data-tela="pack" onclick="irPara('pack')"><span class="em">📦</span>Packing</button>
+  <button data-tela="estoque" onclick="irPara('estoque')"><span class="em">📊</span>Estoque</button>
+</nav>
+
+<!-- Scanner -->
+<div class="modal" id="modal-scan">
+  <div class="mtopo">
+    <b id="scan-titulo">Escanear</b>
+    <button class="fechar" onclick="fecharScanner()">✕</button>
+  </div>
+  <div class="alvo-msg" id="scan-msg">Aponte a câmera para o QR / código de barras</div>
+  <div id="reader"></div>
+  <div class="manual">
+    <label class="campo" style="color:#ccc">Sem câmera? Digite o código manualmente:</label>
+    <input id="manual-code" placeholder="Ex.: A-01 ou SKU-001">
+    <button class="btn amarelo" onclick="confirmarManual()">Confirmar código digitado</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ===== LIBS (injetadas) ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+/* =========================================================
+   ESTADO
+========================================================= */
+const KEY="meli_wms_sim_v2";
+let S=carregar();
+
+function estadoInicial(){
+  return {bins:[],products:[],inventory:{},inboundTotes:[],recebendo:null,orders:[],totes:{},putaway:null,seq:{order:0,inbound:0}};
+}
+function carregar(){
+  try{const r=localStorage.getItem(KEY);if(r)return Object.assign(estadoInicial(),JSON.parse(r));}catch(e){}
+  return estadoInicial();
+}
+function salvar(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("Não foi possível salvar (modo privado?)","err");}}
+
+/* helpers */
+const getProd=sku=>S.products.find(p=>p.sku===sku);
+const getBin=code=>S.bins.find(b=>b.code===code);
+function binsComSku(sku){return S.bins.filter(b=>(S.inventory[b.code]||{})[sku]>0).map(b=>({code:b.code,qty:S.inventory[b.code][sku]}));}
+function estoqueSku(sku){return S.bins.reduce((t,b)=>t+((S.inventory[b.code]||{})[sku]||0),0);}
+const norm=s=>(s||"").trim().toUpperCase();
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+function irPara(t){
+  document.querySelectorAll('.tela').forEach(e=>e.classList.remove('ativa'));
+  const map={config:'tela-config',print:'tela-print',inbound:'tela-inbound',arm:'tela-arm',pick:'tela-pick',pack:'tela-pack',estoque:'tela-estoque'};
+  document.getElementById(map[t]).classList.add('ativa');
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tela===t));
+  render(t);
+  window.scrollTo(0,0);
+}
+function render(t){
+  if(t==='config')renderConfig();
+  if(t==='print')renderPrint();
+  if(t==='inbound')renderInbound();
+  if(t==='arm')renderArm();
+  if(t==='pick')renderPicking();
+  if(t==='pack')renderPacking();
+  if(t==='estoque')renderEstoque();
+}
+
+/* =========================================================
+   TOAST + FEEDBACK
+========================================================= */
+let toastT;
+function toast(msg,tipo='info'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='show '+tipo;
+  clearTimeout(toastT); toastT=setTimeout(()=>el.className='',2200);
+  if(navigator.vibrate){navigator.vibrate(tipo==='err'?[80,40,80]:40);}
+}
+
+/* =========================================================
+   SCANNER (html5-qrcode)
+========================================================= */
+let scanner=null, scanCb=null;
+function abrirScanner(titulo,msg,cb){
+  scanCb=cb;
+  document.getElementById('scan-titulo').textContent=titulo;
+  document.getElementById('scan-msg').textContent=msg||'Aponte a câmera para o QR / código de barras';
+  document.getElementById('manual-code').value='';
+  document.getElementById('modal-scan').classList.add('on');
+  const formatos=(typeof Html5QrcodeSupportedFormats!=='undefined')?[
+    Html5QrcodeSupportedFormats.QR_CODE,Html5QrcodeSupportedFormats.CODE_128,
+    Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_13,
+    Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.ITF,
+    Html5QrcodeSupportedFormats.CODABAR,Html5QrcodeSupportedFormats.UPC_A
+  ]:undefined;
+  try{
+    scanner=new Html5Qrcode("reader",{formatsToSupport:formatos,verbose:false});
+    scanner.start({facingMode:"environment"},
+      {fps:10,qrbox:{width:240,height:240},aspectRatio:1.0},
+      txt=>{onScan(txt);},
+      ()=>{});
+  }catch(e){
+    document.getElementById('scan-msg').textContent='Câmera indisponível — digite o código abaixo.';
+  }
+}
+function pararCamera(){
+  if(scanner){
+    try{scanner.stop().then(()=>{try{scanner.clear();}catch(e){} scanner=null;}).catch(()=>{scanner=null;});}
+    catch(e){scanner=null;}
+  }
+}
+function fecharScanner(){pararCamera();document.getElementById('modal-scan').classList.remove('on');scanCb=null;}
+function onScan(txt){const cb=scanCb;fecharScanner();if(cb)cb(txt);}
+function confirmarManual(){
+  const v=document.getElementById('manual-code').value;
+  if(!v.trim()){toast("Digite um código","err");return;}
+  onScan(v);
+}
+/* interpreta o conteúdo do código */
+function parse(txt){
+  const raw=txt.trim();
+  if(raw.startsWith("BIN|"))return{tipo:'bin',valor:norm(raw.slice(4))};
+  if(raw.startsWith("PRD|"))return{tipo:'produto',valor:norm(raw.slice(4))};
+  if(raw.startsWith("TOTE|"))return{tipo:'tote',valor:norm(raw.slice(5))};
+  return{tipo:'raw',valor:norm(raw)};
+}
+
+/* =========================================================
+   CONFIGURAR
+========================================================= */
+function renderConfig(){
+  document.getElementById('qtd-bins').textContent=S.bins.length;
+  document.getElementById('qtd-prod').textContent=S.products.length;
+  const lb=document.getElementById('lista-bins');
+  lb.innerHTML=S.bins.length?S.bins.map(b=>`
+    <div class="item"><div class="ic" style="background:#FFF7CC">🗄️</div>
+    <div class="txt"><b>${b.label}</b><span>código: ${b.code}</span></div>
+    <button class="del" onclick="delBin('${b.code}')">×</button></div>`).join(''):
+    `<div class="vazio"><span class="em">🗄️</span>Nenhum bin ainda</div>`;
+  const lp=document.getElementById('lista-prod');
+  lp.innerHTML=S.products.length?S.products.map(p=>`
+    <div class="item"><div class="ic" style="background:#EAF1FF">🏷️</div>
+    <div class="txt"><b>${p.name}</b><span>${p.sku}</span></div>
+    <button class="del" onclick="delProd('${p.sku}')">×</button></div>`).join(''):
+    `<div class="vazio"><span class="em">🏷️</span>Nenhum produto ainda</div>`;
+}
+function addBin(){
+  const el=document.getElementById('in-bin');const code=norm(el.value);
+  if(!code){toast("Informe o nome do bin","err");return;}
+  if(getBin(code)){toast("Esse bin já existe","err");return;}
+  S.bins.push({code,label:code});S.inventory[code]=S.inventory[code]||{};
+  el.value='';salvar();renderConfig();toast("Bin adicionado","ok");
+}
+function delBin(code){
+  if(Object.values(S.inventory[code]||{}).some(q=>q>0)){if(!confirm("Esse bin tem estoque. Remover mesmo assim?"))return;}
+  S.bins=S.bins.filter(b=>b.code!==code);delete S.inventory[code];salvar();renderConfig();
+}
+function addProduto(){
+  const es=document.getElementById('in-sku'),en=document.getElementById('in-nome');
+  const sku=norm(es.value),name=en.value.trim()||sku;
+  if(!sku){toast("Informe o SKU","err");return;}
+  if(getProd(sku)){toast("Esse SKU já existe","err");return;}
+  S.products.push({sku,name});es.value='';en.value='';salvar();renderConfig();toast("Produto adicionado","ok");
+}
+function delProd(sku){S.products=S.products.filter(p=>p.sku!==sku);salvar();renderConfig();}
+function carregarExemplo(){
+  if((S.bins.length||S.products.length)&&!confirm("Isso vai adicionar bins/produtos de exemplo. Continuar?"))return;
+  const bins=["A-01","A-02","A-03","A-04","B-01","B-02","B-03","B-04","C-01","C-02","C-03","C-04"];
+  bins.forEach(c=>{if(!getBin(c)){S.bins.push({code:c,label:c});S.inventory[c]={};}});
+  const prods=[["SKU-001","Camiseta Azul M"],["SKU-002","Tênis Corrida 42"],["SKU-003","Fone Bluetooth"],
+    ["SKU-004","Caneca Térmica"],["SKU-005","Mochila Notebook"],["SKU-006","Carregador USB-C"],
+    ["SKU-007","Garrafa 1L"],["SKU-008","Mouse Sem Fio"]];
+  prods.forEach(([s,n])=>{if(!getProd(s))S.products.push({sku:s,name:n});});
+  salvar();renderConfig();toast("Exemplo carregado","ok");
+}
+function resetTudo(){if(confirm("Apagar TODA a simulação (bins, produtos, estoque e pedidos)?")){S=estadoInicial();salvar();
+/* =========================================================
+   PWA · manifest + instalação na tela inicial (Android)
+========================================================= */
+(function(){
+  try{
+    var icon = document.querySelector('link[rel="icon"]').getAttribute('href');
+    var manifest = {
+      name: "Simulador de Operação · Meli Full",
+      short_name: "Sim. Operação",
+      description: "Treino Meli Full: Inbound, Putaway, Picking e Packing.",
+      start_url: ".",
+      scope: ".",
+      display: "standalone",
+      orientation: "portrait",
+      background_color: "#2D3277",
+      theme_color: "#2D3277",
+      icons: [
+        { src: icon, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
+        { src: icon, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+      ]
+    };
+    var blob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+    document.getElementById("manifest-link").setAttribute("href", URL.createObjectURL(blob));
+  }catch(e){}
+
+  // Service worker inline (cache da própria página) — só em contexto seguro
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    var swCode = [
+      "self.addEventListener('install', function(e){ self.skipWaiting(); });",
+      "self.addEventListener('activate', function(e){ e.waitUntil(self.clients.claim()); });",
+      "self.addEventListener('fetch', function(e){",
+      "  e.respondWith(",
+      "    fetch(e.request).then(function(r){",
+      "      try{ var c=r.clone(); caches.open('sim-op-v1').then(function(k){ k.put(e.request,c); }); }catch(_){ }",
+      "      return r;",
+      "    }).catch(function(){ return caches.match(e.request); })",
+      "  );",
+      "});"
+    ].join("\n");
+    try{
+      var swBlob = new Blob([swCode], {type: "text/javascript"});
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function(){});
+    }catch(e){}
+  }
+
+  // Prompt de instalação
+  var deferred = null;
+  var btn = document.getElementById("btn-instalar");
+  window.addEventListener("beforeinstallprompt", function(ev){
+    ev.preventDefault();
+    deferred = ev;
+    if (btn) btn.style.display = "inline-flex";
+  });
+  window.instalarApp = function(){
+    if (!deferred){
+      toast("No menu ⋮ do navegador toque em 'Adicionar à tela inicial'", "info");
+      return;
+    }
+    deferred.prompt();
+    deferred.userChoice.finally(function(){
+      deferred = null;
+      if (btn) btn.style.display = "none";
+    });
+  };
+  window.addEventListener("appinstalled", function(){
+    if (btn) btn.style.display = "none";
+    try{ toast("App instalado ✓", "ok"); }catch(e){}
+  });
+})();
+
+irPara('config');toast("Simulação zerada","ok");}}
+function exportar(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download="simulacao-meli-"+new Date().toISOString().slice(0,10)+".json";a.click();
+}
+function importar(ev){
+  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{S=Object.assign(estadoInicial(),JSON.parse(r.result));salvar();irPara('config');toast("Dados importados","ok");}catch(e){toast("Arquivo inválido","err");}};
+  r.readAsText(f);ev.target.value='';
+}
+
+/* =========================================================
+   IMPRIMIR QR
+========================================================= */
+let subPrint='bins';
+function setSubPrint(s){subPrint=s;document.querySelectorAll('#tela-print .subtabs button').forEach(b=>b.classList.toggle('on',b.dataset.sub===s));document.getElementById('config-tote').style.display=s==='tote'?'block':'none';renderPrint();}
+function qrEl(texto,tam=110){const d=document.createElement('div');d.className='qr';new QRCode(d,{text:texto,width:tam,height:tam,correctLevel:QRCode.CorrectLevel.M});return d;}
+function renderPrint(){
+  const g=document.getElementById('grade-print');g.innerHTML='';
+  const tit=document.getElementById('print-titulo');
+  let dados=[];
+  if(subPrint==='bins'){tit.textContent='Etiquetas de BIN';dados=S.bins.map(b=>({code:'BIN|'+b.code,b:b.label,s:'BIN'}));}
+  else if(subPrint==='prod'){tit.textContent='Etiquetas de PRODUTO';dados=S.products.map(p=>({code:'PRD|'+p.sku,b:p.sku,s:p.name}));}
+  else{tit.textContent='Etiquetas de TOTE';const n=parseInt(document.getElementById('qtd-totes').value)||6;
+    for(let i=1;i<=n;i++){const c='T-'+String(i).padStart(3,'0');dados.push({code:'TOTE|'+c,b:c,s:'TOTE'});}}
+  if(!dados.length){g.innerHTML='<div class="vazio" style="grid-column:1/-1"><span class="em">🖨️</span>Cadastre itens em Configurar primeiro</div>';return;}
+  dados.forEach(d=>{
+    const c=document.createElement('div');c.className='etq';
+    c.appendChild(qrEl(d.code));
+    const b=document.createElement('b');b.textContent=d.b;c.appendChild(b);
+    const s=document.createElement('span');s.textContent=d.s;c.appendChild(s);
+    g.appendChild(c);
+  });
+}
+
+/* =========================================================
+   INBOUND (recebimento por TOTE)
+========================================================= */
+function inboundNovaTote(){
+  abrirScanner("Inbound · Tote","Bipe a TOTE que chegou",txt=>{
+    const t=parse(txt);
+    if(t.tipo==='produto'){toast("Isso é um produto. Bipe a TOTE.","err");return;}
+    if(t.tipo==='bin'){toast("Isso é um BIN. Bipe a TOTE.","err");return;}
+    const code=t.valor;
+    if(S.inboundTotes.find(x=>x.tote===code)){toast("Tote "+code+" já está na doca","err");return;}
+    S.recebendo={tote:code,contents:[]};
+    salvar();renderInbound();toast("Tote "+code+" aberta — bipe os produtos","ok");
+  });
+}
+function inboundAddProduto(){
+  if(!S.recebendo)return;
+  abrirScanner("Inbound · Produto",`Bipe um produto da tote ${S.recebendo.tote}`,txt=>{
+    const p=parse(txt);
+    if(p.tipo==='bin'){toast("Isso é um BIN. Bipe um PRODUTO.","err");return;}
+    if(p.tipo==='tote'){toast("Isso é uma TOTE. Bipe um PRODUTO.","err");return;}
+    const prod=getProd(p.valor);
+    if(!prod){toast("Produto não cadastrado: "+p.valor,"err");return;}
+    const qtd=parseInt(prompt(`Quantos "${prod.name}" (${prod.sku}) nesta tote?`,"1"));
+    if(!qtd||qtd<1){toast("Quantidade inválida","err");return;}
+    const ex=S.recebendo.contents.find(c=>c.sku===prod.sku);
+    if(ex)ex.qty+=qtd;else S.recebendo.contents.push({sku:prod.sku,qty:qtd});
+    salvar();renderInbound();toast(`+${qtd} ${prod.sku}`,"ok");
+  });
+}
+function inboundFinalizarTote(){
+  if(!S.recebendo)return;
+  if(!S.recebendo.contents.length){toast("Adicione ao menos 1 produto","err");return;}
+  S.inboundTotes.push(S.recebendo);S.recebendo=null;
+  salvar();renderInbound();toast("Tote recebida na doca ✓","ok");
+}
+function inboundCancelarTote(){
+  if(S.recebendo&&(!S.recebendo.contents.length||confirm("Descartar a tote em recebimento?"))){
+    S.recebendo=null;salvar();renderInbound();
+  }
+}
+function inboundRemoverTote(code){
+  if(confirm("Remover a tote "+code+" da doca?")){S.inboundTotes=S.inboundTotes.filter(x=>x.tote!==code);salvar();renderInbound();}
+}
+function renderInbound(){
+  const c=document.getElementById('inbound-conteudo');
+  if(S.recebendo){
+    const r=S.recebendo;
+    let its=r.contents.length?r.contents.map(x=>{const p=getProd(x.sku);return`
+      <div class="item"><div class="ic" style="background:#EAF1FF">🏷️</div>
+      <div class="txt"><b>${p?p.name:x.sku}</b><span>${x.sku}</span></div>
+      <span class="tag aberto">${x.qty} un</span></div>`;}).join(''):
+      `<div class="vazio" style="padding:12px"><span class="em">🏷️</span>Nenhum produto nesta tote ainda</div>`;
+    c.innerHTML=`<div class="card" style="border:2px solid var(--azul)">
+      <h3>📥 Recebendo tote <span style="color:var(--azul)">${r.tote}</span></h3>
+      ${its}
+      <button class="btn azul peq" style="width:100%;margin-top:10px" onclick="inboundAddProduto()">➕ Bipar produto desta tote</button>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn verde" onclick="inboundFinalizarTote()">✔ Finalizar tote</button>
+        <button class="btn cinza" onclick="inboundCancelarTote()">Cancelar</button>
+      </div></div>`;
+  }else{
+    c.innerHTML=`<button class="btn azul" onclick="inboundNovaTote()">📷 Bipar nova tote (recebimento)</button>`;
+  }
+  document.getElementById('qtd-doca').textContent=S.inboundTotes.length;
+  const l=document.getElementById('lista-doca');
+  l.innerHTML=S.inboundTotes.length?S.inboundTotes.map(t=>{
+    const itens=t.contents.map(x=>x.sku+'×'+x.qty).join(' · ');
+    const un=t.contents.reduce((s,x)=>s+x.qty,0);
+    return `<div class="item"><div class="ic" style="background:#FFF7CC">📦</div>
+      <div class="txt"><b>Tote ${t.tote}</b><span>${itens} · ${un} un</span></div>
+      <button class="del" onclick="inboundRemoverTote('${t.tote}')">×</button></div>`;}).join(''):
+    `<div class="vazio"><span class="em">📭</span>Doca vazia. Receba uma tote.</div>`;
+}
+
+/* =========================================================
+   PUTAWAY (por TOTE · abre tote → PRODUTO → BIN)
+========================================================= */
+function escolherBin(sku,usados){
+  const existente=S.bins.find(b=>(S.inventory[b.code]||{})[sku]>0);
+  if(existente)return existente.code;
+  const ord=[...S.bins].sort((a,b)=>{
+    const ua=usados.includes(a.code)?1:0, ub=usados.includes(b.code)?1:0;
+    if(ua!==ub)return ua-ub;
+    return Object.keys(S.inventory[a.code]||{}).length-Object.keys(S.inventory[b.code]||{}).length;
+  });
+  return ord.length?ord[0].code:null;
+}
+function comecarPutaway(){
+  if(!S.bins.length){toast("Cadastre bins em Configurar","err");return;}
+  if(!S.products.length){toast("Cadastre produtos em Configurar","err");return;}
+  const usados=[];
+  const fazTote=(toteCode,contents)=>({
+    tote:toteCode,aberta:false,
+    lines:contents.map(c=>{const bin=escolherBin(c.sku,usados);if(bin)usados.push(bin);return{sku:c.sku,qty:c.qty,bin,done:false};})
+  });
+  let totes,origem;
+  if(S.inboundTotes.length){
+    origem='doca';
+    totes=S.inboundTotes.map(t=>fazTote(t.tote,t.contents));
+    S.inboundTotes=[]; // movidas para o putaway
+  }else{
+    origem='treino';
+    // agrupa os produtos cadastrados em totes de até 3 (T-001, T-002...)
+    const ps=S.products.map(p=>({sku:p.sku,qty:1}));
+    totes=[];let n=0;
+    for(let i=0;i<ps.length;i+=3){n++;totes.push(fazTote('T-'+String(n).padStart(3,'0'),ps.slice(i,i+3)));}
+  }
+  S.putaway={totes,origem};
+  salvar();renderArm();toast("Putaway gerado por tote","ok");
+}
+function rollbackPutaway(){
+  // desfaz o que já foi guardado no estoque
+  S.putaway.totes.forEach(t=>t.lines.forEach(l=>{
+    if(l.done&&(S.inventory[l.bin]||{})[l.sku]){
+      S.inventory[l.bin][l.sku]-=l.qty;
+      if(S.inventory[l.bin][l.sku]<=0)delete S.inventory[l.bin][l.sku];
+    }
+  }));
+  // devolve as totes para a doca (se vieram de lá)
+  if(S.putaway.origem==='doca'){
+    S.putaway.totes.forEach(t=>S.inboundTotes.push({tote:t.tote,contents:t.lines.map(l=>({sku:l.sku,qty:l.qty}))}));
+  }
+}
+function cancelarPutaway(){if(confirm("Cancelar o putaway? As totes voltam para a doca.")){rollbackPutaway();S.putaway=null;salvar();renderArm();}}
+function concluirPutaway(){S.putaway=null;salvar();renderArm();toast("Putaway concluído ✓","ok");}
+function abrirTotePutaway(ti){
+  const t=S.putaway.totes[ti];
+  abrirScanner("Putaway · Tote",`Bipe a TOTE ${t.tote}`,txt=>{
+    const s=parse(txt);
+    if(s.valor!==t.tote){toast("Tote errada! Esperada: "+t.tote,"err");return;}
+    t.aberta=true;salvar();renderArm();toast("Tote "+t.tote+" aberta","ok");
+  });
+}
+function putawayLinha(ti,li){
+  const t=S.putaway.totes[ti],ln=t.lines[li];
+  abrirScanner("Putaway · Produto",`Bipe o produto ${ln.sku} (tote ${t.tote})`,txtP=>{
+    const p=parse(txtP);
+    if(p.valor!==ln.sku){toast("Produto errado! Esperado: "+ln.sku,"err");return;}
+    setTimeout(()=>{
+      abrirScanner("Putaway · BIN",`Bipe o BIN ${ln.bin}`,txtB=>{
+        const b=parse(txtB);
+        if(b.valor!==ln.bin){toast("BIN errado! Guarde no bin "+ln.bin,"err");return;}
+        S.inventory[ln.bin]=S.inventory[ln.bin]||{};
+        S.inventory[ln.bin][ln.sku]=(S.inventory[ln.bin][ln.sku]||0)+ln.qty;
+        ln.done=true;salvar();renderArm();
+        toast(`${ln.qty}× ${ln.sku} → BIN ${ln.bin}`,"ok");
+      });
+    },350);
+  });
+}
+function renderArm(){
+  const c=document.getElementById('putaway-conteudo');
+  const pa=S.putaway;
+  if(!pa){
+    c.innerHTML=`<button class="btn azul" onclick="comecarPutaway()">▶ Começar putaway</button>`;
+  }else{
+    const allLines=pa.totes.flatMap(t=>t.lines);
+    const tot=allLines.length,fz=allLines.filter(l=>l.done).length;
+    let h=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>Putaway por tote</b><span>${fz}/${tot} itens</span></div>
+      <div class="barra-prog"><i style="width:${tot?Math.round(fz/tot*100):0}%"></i></div>
+      <small style="color:var(--texto-fraco)">${pa.origem==='doca'?'📥 Totes recebidas no Inbound':'🧪 Modo treino · produtos cadastrados'}</small></div>`;
+    pa.totes.forEach((t,ti)=>{
+      const tdone=t.lines.every(l=>l.done);
+      h+=`<div class="card" style="${tdone?'opacity:.7':''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <b>📦 Tote ${t.tote}</b><span>${t.lines.filter(l=>l.done).length}/${t.lines.length} ${tdone?'✓':''}</span></div>`;
+      if(tdone){
+        h+=`<small style="color:var(--verde)">Tote guardada</small>`;
+      }else if(!t.aberta){
+        h+=`<button class="btn amarelo peq" style="width:100%" onclick="abrirTotePutaway(${ti})">📷 Bipar a tote ${t.tote} para começar</button>`;
+      }else{
+        t.lines.forEach((ln,li)=>{
+          const p=getProd(ln.sku);
+          h+=`<div class="linha-pick ${ln.done?'feito':''}" style="margin-top:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><b>${p?p.name:ln.sku}</b><br><small style="color:var(--texto-fraco)">${ln.sku} · ${ln.qty} un</small></div>
+              <div style="font-weight:700;color:${ln.done?'var(--verde)':'var(--texto)'}">${ln.done?'✓':''}</div>
+            </div>
+            <div class="bin-dest">📍 Guardar no BIN ${ln.bin}</div>
+            ${ln.done?'':`<button class="btn azul peq" style="width:100%;margin-top:8px" onclick="putawayLinha(${ti},${li})">📷 Bipar PRODUTO → BIN</button>`}
+          </div>`;
+        });
+      }
+      h+=`</div>`;
+    });
+    h+= fz>=tot
+      ? `<button class="btn verde" onclick="concluirPutaway()">✅ Concluir putaway</button>`
+      : `<button class="btn cinza" onclick="cancelarPutaway()">Cancelar putaway</button>`;
+    c.innerHTML=h;
+  }
+  const r=document.getElementById('resumo-estoque-arm');
+  const linhas=[];
+  S.bins.forEach(b=>{const inv=S.inventory[b.code]||{};const its=Object.entries(inv).filter(([s,q])=>q>0);
+    if(its.length)linhas.push(`<div class="item"><div class="ic" style="background:#FFF7CC">🗄️</div>
+      <div class="txt"><b>Bin ${b.code}</b><span>${its.map(([s,q])=>s+' ×'+q).join(' · ')}</span></div></div>`);});
+  r.innerHTML=linhas.length?linhas.join(''):`<div class="vazio"><span class="em">📭</span>Nenhum bin com estoque ainda</div>`;
+}
+
+/* =========================================================
+   PICKING
+========================================================= */
+function pedidoAleatorio(){
+  const disp=S.products.filter(p=>estoqueSku(p.sku)>0);
+  if(disp.length<1){toast("Sem estoque. Faça Inbound + Putaway antes.","err");return;}
+  const n=Math.min(disp.length,1+Math.floor(Math.random()*3));
+  const escolha=disp.sort(()=>Math.random()-.5).slice(0,n);
+  const lines=escolha.map(p=>({sku:p.sku,qty:1+Math.floor(Math.random()*Math.min(3,estoqueSku(p.sku))),picked:0}));
+  criarPedido(lines);
+}
+function abrirPedidoManual(){
+  const f=document.getElementById('form-manual');
+  if(f.style.display==='block'){f.style.display='none';return;}
+  const disp=S.products.filter(p=>estoqueSku(p.sku)>0);
+  if(!disp.length){toast("Sem estoque disponível","err");return;}
+  f.style.display='block';
+  f.innerHTML=`<h3>Montar pedido</h3>`+disp.map(p=>`
+    <div class="item"><div class="txt"><b>${p.name}</b><span>${p.sku} · estoque ${estoqueSku(p.sku)}</span></div>
+    <input type="number" min="0" max="${estoqueSku(p.sku)}" value="0" id="m-${p.sku}" style="width:64px;margin:0;text-align:center"></div>`).join('')
+    +`<button class="btn verde" style="margin-top:10px" onclick="confirmarManualPedido()">Criar pedido</button>`;
+}
+function confirmarManualPedido(){
+  const lines=[];
+  S.products.forEach(p=>{const el=document.getElementById('m-'+p.sku);if(el){const q=parseInt(el.value)||0;if(q>0)lines.push({sku:p.sku,qty:q,picked:0});}});
+  if(!lines.length){toast("Selecione ao menos 1 item","err");return;}
+  document.getElementById('form-manual').style.display='none';
+  criarPedido(lines);
+}
+function criarPedido(lines){
+  const id=++S.seq.order;
+  S.orders.push({id,label:"PED-"+String(id).padStart(3,'0'),lines,tote:null,status:'aberto'});
+  salvar();renderPicking();toast("Pedido PED-"+String(id).padStart(3,'0')+" criado","ok");
+}
+function renderPicking(){
+  const l=document.getElementById('lista-pedidos');
+  const ativos=S.orders.filter(o=>o.status!=='empacotado');
+  if(!ativos.length){l.innerHTML=`<div class="vazio"><span class="em">📋</span>Nenhum pedido. Gere um pedido pra começar o picking.</div>`;return;}
+  l.innerHTML=ativos.map(o=>{
+    const tot=o.lines.reduce((t,x)=>t+x.qty,0),fz=o.lines.reduce((t,x)=>t+x.picked,0);
+    const tagcls={aberto:'aberto',em_picking:'picking',coletado:'coletado'}[o.status];
+    const tagtxt={aberto:'Aberto',em_picking:'Em coleta',coletado:'Coletado ✓'}[o.status];
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <b>${o.label}</b><span class="tag ${tagcls}">${tagtxt}</span></div>
+      <div style="font-size:13px;color:var(--texto-fraco)">📦 ${tot} produto(s) nesta tarefa</div>
+      <div class="barra-prog"><i style="width:${Math.round(fz/tot*100)}%"></i></div>
+      ${o.status==='coletado'
+        ? `<div style="font-size:13px;color:var(--verde);font-weight:700">Tote ${o.tote} pronta → leve para o Packing</div>`
+        : `<button class="btn azul peq" style="width:100%" onclick="iniciarColeta(${o.id})">${o.status==='aberto'?'▶ Começar picking':'↻ Continuar picking'}</button>`}
+    </div>`;
+  }).join('');
+}
+
+/* execução do picking — fluxo guiado "às cegas" */
+let pedidoAtual=null;
+function proxLinha(o){for(let i=0;i<o.lines.length;i++){if(o.lines[i].picked<o.lines[i].qty)return i;}return -1;}
+function iniciarColeta(id){
+  pedidoAtual=id;const o=S.orders.find(x=>x.id===id);
+  if(o.status==='aberto')o.status='em_picking';
+  if(!o.fase&&o.status!=='coletado')o.fase='solicitar';
+  salvar();mostrarExec();
+}
+function voltarPicking(){pedidoAtual=null;irPara('pick');}
+function mostrarExec(){
+  document.querySelectorAll('.tela').forEach(e=>e.classList.remove('ativa'));
+  document.getElementById('tela-exec').classList.add('ativa');
+  renderExec();window.scrollTo(0,0);
+}
+function renderExec(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);if(!o){voltarPicking();return;}
+  const c=document.getElementById('exec-conteudo');
+  const tot=o.lines.reduce((t,x)=>t+x.qty,0),fz=o.lines.reduce((t,x)=>t+x.picked,0),rest=tot-fz;
+  let head=`<div class="card"><div style="display:flex;justify-content:space-between"><b>${o.label}</b><span>${o.tote?'Tote '+o.tote:'sem tote'}</span></div>
+    <div class="barra-prog"><i style="width:${Math.round(fz/tot*100)}%"></i></div>
+    <small style="color:var(--texto-fraco)">${fz} de ${tot} coletados</small></div>`;
+  let body='';
+  if(fz>=tot){
+    body=`<div class="card" style="text-align:center;padding:24px"><div style="font-size:44px">✅</div>
+      <b style="font-size:16px">Coleta concluída!</b>
+      <p class="dica" style="margin-top:6px">Tote <b>${o.tote}</b> pronta para o Packing.</p></div>
+      <button class="btn verde" onclick="finalizarColeta()">📦 Enviar para Packing</button>`;
+  }else if(o.fase==='solicitar'){
+    body=`<div class="card" style="text-align:center;padding:24px">
+      <div style="font-size:13px;color:var(--texto-fraco)">Produtos a coletar nesta tarefa</div>
+      <div style="font-size:52px;font-weight:800;color:var(--azul);line-height:1.1">${rest}</div>
+      <p class="dica" style="margin-top:10px">Bipe <b>qualquer BIN</b> para receber o endereço de coleta.</p>
+      <button class="btn amarelo" onclick="pickSolicitar()">📷 Bipar qualquer BIN</button></div>`;
+  }else if(o.fase==='navegar'){
+    body=`<div class="card" style="text-align:center;padding:24px">
+      <div style="font-size:13px;color:var(--texto-fraco)">Vá até o endereço</div>
+      <div style="font-size:40px;font-weight:800;color:#000;background:var(--amarelo);border-radius:12px;padding:14px;margin:12px 0">📍 ${o.alvoBin}</div>
+      <p class="dica">Ao chegar no BIN <b>${o.alvoBin}</b>, bipe para confirmar.</p>
+      <button class="btn azul" onclick="pickChegada()">📷 Cheguei — bipar o BIN</button></div>`;
+  }else if(o.fase==='coletar'){
+    const p=getProd(o.alvoSku);
+    body=`<div class="card" style="text-align:center;padding:24px">
+      <div style="font-size:13px;color:var(--texto-fraco)">No BIN ${o.alvoBin} · colete</div>
+      <div style="font-size:22px;font-weight:800;margin:8px 0">${p?p.name:o.alvoSku}</div>
+      <div style="color:var(--texto-fraco);font-size:13px">${o.alvoSku} · 1 unidade</div>
+      <button class="btn amarelo" style="margin-top:14px" onclick="pickProduto()">📷 Bipar o produto</button></div>`;
+  }else if(o.fase==='tote'){
+    const p=getProd(o.alvoSku);
+    body=`<div class="card" style="text-align:center;padding:24px">
+      <div style="font-size:13px;color:var(--texto-fraco)">${p?p.name:o.alvoSku} em mãos</div>
+      <p class="dica" style="margin-top:8px">Bipe a tote ${o.tote?('<b>'+o.tote+'</b>'):'onde está depositando o produto'}.</p>
+      <button class="btn verde" onclick="pickTote()">📷 Bipar a tote</button></div>`;
+  }
+  c.innerHTML=head+body;
+}
+function pickSolicitar(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);
+  abrirScanner("Picking · Solicitar","Bipe qualquer BIN para receber o endereço",txt=>{
+    const b=parse(txt);
+    if(b.tipo==='produto'){toast("Isso é um produto. Bipe um BIN.","err");return;}
+    const li=proxLinha(o);if(li<0){renderExec();return;}
+    const sku=o.lines[li].sku,bins=binsComSku(sku);
+    if(!bins.length){toast("Sem estoque do próximo item nos bins","err");return;}
+    o.alvoSku=sku;o.alvoBin=bins[0].code;o.fase='navegar';
+    salvar();renderExec();toast("Endereço: "+o.alvoBin,"info");
+  });
+}
+function pickChegada(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);
+  abrirScanner("Picking · Chegada",`Bipe o BIN ${o.alvoBin}`,txt=>{
+    const b=parse(txt);
+    if(b.valor!==o.alvoBin){toast("BIN errado! Vá até "+o.alvoBin,"err");return;}
+    o.fase='coletar';salvar();renderExec();
+  });
+}
+function pickProduto(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);
+  abrirScanner("Picking · Produto",`Bipe o produto ${o.alvoSku}`,txt=>{
+    const p=parse(txt);
+    if(p.valor!==o.alvoSku){toast("Produto errado! Esperado: "+o.alvoSku,"err");return;}
+    o.fase='tote';salvar();renderExec();
+  });
+}
+function pickTote(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);
+  abrirScanner("Picking · Tote",o.tote?`Bipe a tote ${o.tote}`:"Bipe a tote",txt=>{
+    const code=parse(txt).valor;
+    if(o.tote&&o.tote!==code){toast("Tote diferente! Use a tote "+o.tote,"err");return;}
+    if(!o.tote){o.tote=code;S.totes[code]={orderId:o.id};}
+    if((S.inventory[o.alvoBin]||{})[o.alvoSku]>0){
+      S.inventory[o.alvoBin][o.alvoSku]-=1;
+      if(S.inventory[o.alvoBin][o.alvoSku]<=0)delete S.inventory[o.alvoBin][o.alvoSku];
+    }
+    const ln=o.lines.find(l=>l.sku===o.alvoSku&&l.picked<l.qty);if(ln)ln.picked+=1;
+    const rest=o.lines.reduce((t,x)=>t+(x.qty-x.picked),0);
+    if(rest>0){o.fase='solicitar';o.alvoBin=null;o.alvoSku=null;}
+    else{o.status='coletado';o.fase=null;}
+    salvar();renderExec();toast("Item depositado na tote "+code,"ok");
+  });
+}
+function finalizarColeta(){
+  const o=S.orders.find(x=>x.id===pedidoAtual);o.status='coletado';o.fase=null;salvar();
+  toast("Tote "+o.tote+" pronta para Packing","ok");voltarPicking();
+}
+
+/* =========================================================
+   PACKING
+========================================================= */
+function iniciarPacking(){
+  abrirScanner("Packing · Tote","Bipe a tote vinda da coleta",txt=>{
+    const tt=parse(txt);const code=tt.valor;
+    const o=S.orders.find(x=>x.tote===code);
+    if(!o){toast("Tote não encontrada: "+code,"err");return;}
+    if(o.status==='empacotado'){toast("Tote já empacotada","info");return;}
+    if(o.status!=='coletado'){toast("Tote ainda em coleta","err");return;}
+    const itens=o.lines.map(x=>{const p=getProd(x.sku);return(p?p.name:x.sku)+' ×'+x.qty;}).join('\n');
+    if(confirm(`Tote ${code} · ${o.label}\n\nConteúdo:\n${itens}\n\nConfirmar empacotamento?`)){
+      o.status='empacotado';salvar();renderPacking();toast("Pedido "+o.label+" empacotado ✓","ok");
+    }
+  });
+}
+function renderPacking(){
+  const pk=S.orders.filter(o=>o.status==='empacotado');
+  document.getElementById('qtd-pack').textContent=pk.length;
+  const l=document.getElementById('lista-pack');
+  l.innerHTML=pk.length?pk.map(o=>`
+    <div class="item"><div class="ic" style="background:#E6F7EF">✅</div>
+    <div class="txt"><b>${o.label} · Tote ${o.tote}</b><span>${o.lines.reduce((t,x)=>t+x.qty,0)} itens</span></div>
+    <span class="tag empacotado">Fechado</span></div>`).join(''):
+    `<div class="vazio"><span class="em">📦</span>Nenhuma tote empacotada ainda</div>`;
+}
+
+/* =========================================================
+   ESTOQUE
+========================================================= */
+function renderEstoque(){
+  const c=document.getElementById('tabela-estoque');
+  const comEstoque=S.bins.filter(b=>Object.values(S.inventory[b.code]||{}).some(q=>q>0));
+  if(!comEstoque.length){c.innerHTML=`<div class="vazio"><span class="em">📊</span>Nenhum estoque ainda.<br>Faça Inbound e Putaway.</div>`;return;}
+  let rows='';
+  comEstoque.forEach(b=>{
+    Object.entries(S.inventory[b.code]).filter(([s,q])=>q>0).forEach(([s,q])=>{
+      const p=getProd(s);rows+=`<tr><td>${b.code}</td><td>${p?p.name:s}<br><small style="color:var(--texto-fraco)">${s}</small></td><td class="qtd">${q}</td></tr>`;
+    });
+  });
+  const totDoca=S.inboundTotes.length;
+  c.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
+    <table class="estoque"><thead><tr><th>Bin</th><th>Produto</th><th style="text-align:center">Qtd</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    ${totDoca?`<p class="dica">📥 ${totDoca} tote(s) na doca aguardando putaway.</p>`:''}`;
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+irPara('config');
+</script>
+</body>
+</html>
